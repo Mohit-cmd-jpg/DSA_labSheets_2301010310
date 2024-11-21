@@ -1,205 +1,272 @@
-class SinglyLinkedList:
-    class Node:
-        def _init_(self, data):
-            self.data = data
-            self.next = None
+#include <iostream>
+#include <vector>
+#include <deque>
+#include <queue>
+#include <sstream>
+using namespace std;
 
-    def _init_(self):
-        self.head = None
+// Singly Linked List
+class SinglyLinkedList {
+    struct Node {
+        int data;
+        Node* next;
+        Node(int val) : data(val), next(nullptr) {}
+    };
 
-    def insert(self, data):
-        new_node = self.Node(data)
-        if not self.head:
-            self.head = new_node
-        else:
-            current = self.head
-            while current.next:
-                current = current.next
-            current.next = new_node
+    Node* head;
 
-    def delete(self, data):
-        if not self.head:
-            return
-        if self.head.data == data:
-            self.head = self.head.next
-            return
-        current = self.head
-        while current.next and current.next.data != data:
-            current = current.next
-        if current.next:
-            current.next = current.next.next
+public:
+    SinglyLinkedList() : head(nullptr) {}
 
-    def traverse(self):
-        current = self.head
-        result = []
-        while current:
-            result.append(current.data)
-            current = current.next
-        return result
+    void insert(int data) {
+        Node* new_node = new Node(data);
+        if (!head) {
+            head = new_node;
+        } else {
+            Node* current = head;
+            while (current->next) {
+                current = current->next;
+            }
+            current->next = new_node;
+        }
+    }
 
+    void remove(int data) {
+        if (!head) return;
+        if (head->data == data) {
+            Node* temp = head;
+            head = head->next;
+            delete temp;
+            return;
+        }
+        Node* current = head;
+        while (current->next && current->next->data != data) {
+            current = current->next;
+        }
+        if (current->next) {
+            Node* temp = current->next;
+            current->next = current->next->next;
+            delete temp;
+        }
+    }
 
-class DoublyLinkedList:
-    class Node:
-        def _init_(self, data):
-            self.data = data
-            self.prev = None
-            self.next = None
+    vector<int> traverse() {
+        vector<int> result;
+        Node* current = head;
+        while (current) {
+            result.push_back(current->data);
+            current = current->next;
+        }
+        return result;
+    }
+};
 
-    def _init_(self):
-        self.head = None
+// Doubly Linked List
+class DoublyLinkedList {
+    struct Node {
+        int data;
+        Node* prev;
+        Node* next;
+        Node(int val) : data(val), prev(nullptr), next(nullptr) {}
+    };
 
-    def insert(self, data):
-        new_node = self.Node(data)
-        if not self.head:
-            self.head = new_node
-        else:
-            current = self.head
-            while current.next:
-                current = current.next
-            current.next = new_node
-            new_node.prev = current
+    Node* head;
 
-    def delete(self, data):
-        current = self.head
-        while current and current.data != data:
-            current = current.next
-        if not current:
-            return
-        if current.prev:
-            current.prev.next = current.next
-        if current.next:
-            current.next.prev = current.prev
-        if current == self.head:
-            self.head = current.next
+public:
+    DoublyLinkedList() : head(nullptr) {}
 
-    def traverse(self):
-        current = self.head
-        result = []
-        while current:
-            result.append(current.data)
-            current = current.next
-        return result
+    void insert(int data) {
+        Node* new_node = new Node(data);
+        if (!head) {
+            head = new_node;
+        } else {
+            Node* current = head;
+            while (current->next) {
+                current = current->next;
+            }
+            current->next = new_node;
+            new_node->prev = current;
+        }
+    }
 
+    void remove(int data) {
+        Node* current = head;
+        while (current && current->data != data) {
+            current = current->next;
+        }
+        if (!current) return;
+        if (current->prev) {
+            current->prev->next = current->next;
+        }
+        if (current->next) {
+            current->next->prev = current->prev;
+        }
+        if (current == head) {
+            head = current->next;
+        }
+        delete current;
+    }
 
-class CircularLinkedList:
-    class Node:
-        def _init_(self, data):
-            self.data = data
-            self.next = None
+    vector<int> traverse() {
+        vector<int> result;
+        Node* current = head;
+        while (current) {
+            result.push_back(current->data);
+            current = current->next;
+        }
+        return result;
+    }
+};
 
-    def _init_(self):
-        self.head = None
+// Circular Linked List
+class CircularLinkedList {
+    struct Node {
+        int data;
+        Node* next;
+        Node(int val) : data(val), next(nullptr) {}
+    };
 
-    def insert(self, data):
-        new_node = self.Node(data)
-        if not self.head:
-            self.head = new_node
-            self.head.next = self.head
-        else:
-            current = self.head
-            while current.next != self.head:
-                current = current.next
-            current.next = new_node
-            new_node.next = self.head
+    Node* head;
 
-    def traverse(self):
-        if not self.head:
-            return []
-        result = []
-        current = self.head
-        while True:
-            result.append(current.data)
-            current = current.next
-            if current == self.head:
-                break
-        return result
+public:
+    CircularLinkedList() : head(nullptr) {}
 
+    void insert(int data) {
+        Node* new_node = new Node(data);
+        if (!head) {
+            head = new_node;
+            head->next = head;
+        } else {
+            Node* current = head;
+            while (current->next != head) {
+                current = current->next;
+            }
+            current->next = new_node;
+            new_node->next = head;
+        }
+    }
 
-class PostfixCalculator:
-    def evaluate(self, expression):
-        stack = []
-        for token in expression.split():
-            if token.isdigit():
-                stack.append(int(token))
-            else:
-                b = stack.pop()
-                a = stack.pop()
-                if token == '+':
-                    stack.append(a + b)
-                elif token == '-':
-                    stack.append(a - b)
-                elif token == '*':
-                    stack.append(a * b)
-                elif token == '/':
-                    stack.append(a // b)
-        return stack[0]
+    vector<int> traverse() {
+        vector<int> result;
+        if (!head) return result;
+        Node* current = head;
+        do {
+            result.push_back(current->data);
+            current = current->next;
+        } while (current != head);
+        return result;
+    }
+};
 
+// Postfix Calculator
+class PostfixCalculator {
+public:
+    int evaluate(const string& expression) {
+        vector<int> stack;
+        stringstream ss(expression);
+        string token;
 
-from collections import deque
+        while (ss >> token) {
+            if (isdigit(token[0])) {
+                stack.push_back(stoi(token));
+            } else {
+                int b = stack.back(); stack.pop_back();
+                int a = stack.back(); stack.pop_back();
+                if (token == "+") stack.push_back(a + b);
+                else if (token == "-") stack.push_back(a - b);
+                else if (token == "*") stack.push_back(a * b);
+                else if (token == "/") stack.push_back(a / b);
+            }
+        }
+        return stack.back();
+    }
+};
 
-class TicketQueue:
-    def _init_(self):
-        self.queue = deque()
+// Ticket Queue
+class TicketQueue {
+    deque<string> queue;
 
-    def enqueue(self, ticket):
-        self.queue.append(ticket)
+public:
+    void enqueue(const string& ticket) {
+        queue.push_back(ticket);
+    }
 
-    def dequeue(self):
-        if self.queue:
-            return self.queue.popleft()
-        return None
+    string dequeue() {
+        if (!queue.empty()) {
+            string ticket = queue.front();
+            queue.pop_front();
+            return ticket;
+        }
+        return "";
+    }
+};
 
+// Priority Queue
+class PriorityQueue {
+    priority_queue<int, vector<int>, greater<int>> heap;
 
-import heapq
+public:
+    void insert(int priority) {
+        heap.push(priority);
+    }
 
-class PriorityQueue:
-    def _init_(self):
-        self.heap = []
+    int remove() {
+        if (!heap.empty()) {
+            int priority = heap.top();
+            heap.pop();
+            return priority;
+        }
+        return -1;
+    }
+};
 
-    def insert(self, priority):
-        heapq.heappush(self.heap, priority)
+// Main Function
+int main() {
+    // Singly Linked List
+    SinglyLinkedList sll;
+    sll.insert(1);
+    sll.insert(2);
+    sll.remove(1);
+    for (int val : sll.traverse()) {
+        cout << val << " ";
+    }
+    cout << endl;
 
-    def remove(self):
-        if self.heap:
-            return heapq.heappop(self.heap)
-        return None
+    // Doubly Linked List
+    DoublyLinkedList dll;
+    dll.insert(1);
+    dll.insert(2);
+    dll.remove(2);
+    for (int val : dll.traverse()) {
+        cout << val << " ";
+    }
+    cout << endl;
 
+    // Circular Linked List
+    CircularLinkedList cll;
+    cll.insert(1);
+    cll.insert(2);
+    for (int val : cll.traverse()) {
+        cout << val << " ";
+    }
+    cout << endl;
 
-# Example Usage
-if _name_ == "_main_":
-    # Singly Linked List
-    sll = SinglyLinkedList()
-    sll.insert(1)
-    sll.insert(2)
-    sll.delete(1)
-    print(sll.traverse())  # [2]
+    // Postfix Calculator
+    PostfixCalculator calc;
+    cout << calc.evaluate("5 1 2 + 4 * + 3 -") << endl;
 
-    # Doubly Linked List
-    dll = DoublyLinkedList()
-    dll.insert(1)
-    dll.insert(2)
-    dll.delete(2)
-    print(dll.traverse())  # [1]
+    // Ticket Queue
+    TicketQueue tq;
+    tq.enqueue("ticket1");
+    tq.enqueue("ticket2");
+    cout << tq.dequeue() << endl;
 
-    # Circular Linked List
-    cll = CircularLinkedList()
-    cll.insert(1)
-    cll.insert(2)
-    print(cll.traverse())  # [1, 2]
+    // Priority Queue
+    PriorityQueue pq;
+    pq.insert(3);
+    pq.insert(1);
+    pq.insert(2);
+    cout << pq.remove() << endl;
 
-    # Postfix Calculator
-    calc = PostfixCalculator()
-    print(calc.evaluate("5 1 2 + 4 * + 3 -"))  # 14
-
-    # Ticket Queue
-    tq = TicketQueue()
-    tq.enqueue("ticket1")
-    tq.enqueue("ticket2")
-    print(tq.dequeue())  # "ticket1"
-
-    # Priority Queue
-    pq = PriorityQueue()
-    pq.insert(3)
-    pq.insert(1)
-    pq.insert(2)
-    print(pq.remove())  # 1
+    return 0;
+}
