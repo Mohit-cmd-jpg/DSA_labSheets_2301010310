@@ -1,119 +1,211 @@
-import tkinter as tk
-from tkinter import messagebox
-import networkx as nx
-import matplotlib.pyplot as plt
+#include <iostream>
+#include <map>
+#include <vector>
+#include <queue>
+#include <set>
+#include <algorithm>
 
+using namespace std;
 
-class BinaryTree:
-    def _init_(self):
-        self.root = None
+// Binary Tree Implementation
+class BinaryTree {
+public:
+    struct Node {
+        int key;
+        Node* left;
+        Node* right;
+        Node(int value) : key(value), left(nullptr), right(nullptr) {}
+    };
 
-    class Node:
-        def _init_(self, key):
-            self.key = key
-            self.left = None
-            self.right = None
+    Node* root;
 
-    def insert(self, root, key):
-        if root is None:
-            return self.Node(key)
-        if key < root.key:
-            root.left = self.insert(root.left, key)
-        else:
-            root.right = self.insert(root.right, key)
-        return root
+    BinaryTree() : root(nullptr) {}
 
-    def inorder(self, root):
-        if root:
-            return self.inorder(root.left) + [root.key] + self.inorder(root.right)
-        return []
+    Node* insert(Node* root, int key) {
+        if (root == nullptr) {
+            return new Node(key);
+        }
+        if (key < root->key) {
+            root->left = insert(root->left, key);
+        } else {
+            root->right = insert(root->right, key);
+        }
+        return root;
+    }
 
-    def preorder(self, root):
-        if root:
-            return [root.key] + self.preorder(root.left) + self.preorder(root.right)
-        return []
+    vector<int> inorder(Node* root) {
+        vector<int> result;
+        if (root) {
+            vector<int> left = inorder(root->left);
+            result.insert(result.end(), left.begin(), left.end());
+            result.push_back(root->key);
+            vector<int> right = inorder(root->right);
+            result.insert(result.end(), right.begin(), right.end());
+        }
+        return result;
+    }
 
-    def postorder(self, root):
-        if root:
-            return self.postorder(root.left) + self.postorder(root.right) + [root.key]
-        return []
+    vector<int> preorder(Node* root) {
+        vector<int> result;
+        if (root) {
+            result.push_back(root->key);
+            vector<int> left = preorder(root->left);
+            result.insert(result.end(), left.begin(), left.end());
+            vector<int> right = preorder(root->right);
+            result.insert(result.end(), right.begin(), right.end());
+        }
+        return result;
+    }
 
+    vector<int> postorder(Node* root) {
+        vector<int> result;
+        if (root) {
+            vector<int> left = postorder(root->left);
+            result.insert(result.end(), left.begin(), left.end());
+            vector<int> right = postorder(root->right);
+            result.insert(result.end(), right.begin(), right.end());
+            result.push_back(root->key);
+        }
+        return result;
+    }
+};
 
-class Graph:
-    def _init_(self):
-        self.graph = {}
+// Graph Implementation
+class Graph {
+    map<string, vector<pair<string, int>>> adjList;
 
-    def add_edge(self, u, v, weight=1):
-        if u not in self.graph:
-            self.graph[u] = []
-        self.graph[u].append((v, weight))
+public:
+    void addEdge(string u, string v, int weight = 1) {
+        adjList[u].push_back({v, weight});
+    }
 
-    def bfs(self, start):
-        visited = []
-        queue = [start]
+    vector<string> bfs(string start) {
+        vector<string> visited;
+        queue<string> q;
+        set<string> visitedSet;
 
-        while queue:
-            node = queue.pop(0)
-            if node not in visited:
-                visited.append(node)
-                queue.extend([neighbor[0] for neighbor in self.graph.get(node, [])])
-        return visited
+        q.push(start);
+        while (!q.empty()) {
+            string node = q.front();
+            q.pop();
+            if (visitedSet.find(node) == visitedSet.end()) {
+                visited.push_back(node);
+                visitedSet.insert(node);
+                for (auto neighbor : adjList[node]) {
+                    q.push(neighbor.first);
+                }
+            }
+        }
+        return visited;
+    }
 
-    def dfs(self, start, visited=None):
-        if visited is None:
-            visited = []
-        visited.append(start)
-        for neighbor, _ in self.graph.get(start, []):
-            if neighbor not in visited:
-                self.dfs(neighbor, visited)
-        return visited
+    vector<string> dfs(string start) {
+        vector<string> visited;
+        set<string> visitedSet;
+        dfsHelper(start, visited, visitedSet);
+        return visited;
+    }
 
+private:
+    void dfsHelper(string node, vector<string>& visited, set<string>& visitedSet) {
+        if (visitedSet.find(node) != visitedSet.end()) {
+            return;
+        }
+        visited.push_back(node);
+        visitedSet.insert(node);
+        for (auto neighbor : adjList[node]) {
+            dfsHelper(neighbor.first, visited, visitedSet);
+        }
+    }
+};
 
-# Visualization Tool
-class VisualizationTool:
-    def _init_(self):
-        self.tree = BinaryTree()
-        self.graph = Graph()
-        self.tree_root = None
-        self.window = tk.Tk()
-        self.window.title("Data Visualization Tool")
-        self.create_ui()
+// Main Tool
+class VisualizationTool {
+    BinaryTree tree;
+    Graph graph;
 
-    def create_ui(self):
-        tk.Label(self.window, text="Tree Operations").grid(row=0, column=0)
-        tk.Button(self.window, text="Insert Tree Node", command=self.insert_tree_node).grid(row=1, column=0)
-        tk.Button(self.window, text="Show Tree Inorder", command=self.show_tree_inorder).grid(row=2, column=0)
+public:
+    void run() {
+        while (true) {
+            cout << "\nMenu:\n"
+                 << "1. Insert Tree Node\n"
+                 << "2. Show Tree In-order Traversal\n"
+                 << "3. Add Graph Edge\n"
+                 << "4. Show Graph BFS Traversal\n"
+                 << "5. Exit\n"
+                 << "Enter your choice: ";
+            int choice;
+            cin >> choice;
 
-        tk.Label(self.window, text="Graph Operations").grid(row=0, column=1)
-        tk.Button(self.window, text="Add Graph Edge", command=self.add_graph_edge).grid(row=1, column=1)
-        tk.Button(self.window, text="Show Graph BFS", command=self.show_graph_bfs).grid(row=2, column=1)
+            switch (choice) {
+            case 1:
+                insertTreeNode();
+                break;
+            case 2:
+                showTreeInorder();
+                break;
+            case 3:
+                addGraphEdge();
+                break;
+            case 4:
+                showGraphBFS();
+                break;
+            case 5:
+                return;
+            default:
+                cout << "Invalid choice! Try again.\n";
+            }
+        }
+    }
 
-    def insert_tree_node(self):
-        key = int(input("Enter node value: "))
-        self.tree_root = self.tree.insert(self.tree_root, key)
-        messagebox.showinfo("Tree Operation", f"Node {key} inserted!")
+private:
+    void insertTreeNode() {
+        cout << "Enter node value: ";
+        int value;
+        cin >> value;
+        tree.root = tree.insert(tree.root, value);
+        cout << "Node " << value << " inserted!\n";
+    }
 
-    def show_tree_inorder(self):
-        traversal = self.tree.inorder(self.tree_root)
-        messagebox.showinfo("Tree Traversal", f"In-order Traversal: {traversal}")
+    void showTreeInorder() {
+        vector<int> traversal = tree.inorder(tree.root);
+        cout << "In-order Traversal: ";
+        for (int val : traversal) {
+            cout << val << " ";
+        }
+        cout << endl;
+    }
 
-    def add_graph_edge(self):
-        u = input("Enter starting node: ")
-        v = input("Enter ending node: ")
-        weight = int(input("Enter weight (default 1): ") or "1")
-        self.graph.add_edge(u, v, weight)
-        messagebox.showinfo("Graph Operation", f"Edge {u} -> {v} added!")
+    void addGraphEdge() {
+        cout << "Enter starting node: ";
+        string u;
+        cin >> u;
+        cout << "Enter ending node: ";
+        string v;
+        cin >> v;
+        cout << "Enter weight (default 1): ";
+        int weight;
+        cin >> weight;
+        graph.addEdge(u, v, weight);
+        cout << "Edge " << u << " -> " << v << " added!\n";
+    }
 
-    def show_graph_bfs(self):
-        start = input("Enter starting node for BFS: ")
-        traversal = self.graph.bfs(start)
-        messagebox.showinfo("Graph Traversal", f"BFS Traversal: {traversal}")
+    void showGraphBFS() {
+        cout << "Enter starting node for BFS: ";
+        string start;
+        cin >> start;
+        vector<string> traversal = graph.bfs(start);
+        cout << "BFS Traversal: ";
+        for (const string& node : traversal) {
+            cout << node << " ";
+        }
+        cout << endl;
+    }
+};
 
-    def run(self):
-        self.window.mainloop()
-
-
-# Run the Visualization Tool
-if _name_ == "_main_":
-    tool = VisualizationTool()
-    tool.run()
+// Main function
+int main() {
+    VisualizationTool tool;
+    tool.run();
+    return 0;
+}
