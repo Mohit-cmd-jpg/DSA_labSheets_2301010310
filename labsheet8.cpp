@@ -1,119 +1,205 @@
-import tkinter as tk
-from tkinter import messagebox
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <string>
+#include <limits>
 
+using namespace std;
 
-class Product:
-    def _init_(self, product_id, name, category, price, rating):
-        self.id = product_id
-        self.name = name
-        self.category = category
-        self.price = price
-        self.rating = rating
+// Product Class
+class Product {
+public:
+    int id;
+    string name;
+    string category;
+    double price;
+    double rating;
 
-    def _repr_(self):
-        return f"{self.name} (ID: {self.id}, Price: {self.price}, Rating: {self.rating})"
+    Product(int product_id, string name, string category, double price, double rating) 
+        : id(product_id), name(name), category(category), price(price), rating(rating) {}
 
+    string toString() const {
+        return name + " (ID: " + to_string(id) + ", Price: " + to_string(price) + ", Rating: " + to_string(rating) + ")";
+    }
+};
 
-class ECommerceSystem:
-    def _init_(self):
-        self.products = []
-        self.window = tk.Tk()
-        self.window.title("E-Commerce Search and Sort System")
-        self.create_ui()
+// ECommerceSystem Class
+class ECommerceSystem {
+private:
+    vector<Product> products;
 
-    def create_ui(self):
-        tk.Label(self.window, text="E-Commerce System").grid(row=0, column=0, columnspan=2)
+public:
+    void run() {
+        while (true) {
+            cout << "\nMenu:\n"
+                 << "1. Add Product\n"
+                 << "2. Sort by Price (QuickSort)\n"
+                 << "3. Search by ID (Binary Search)\n"
+                 << "4. Sort by Rating (Merge Sort)\n"
+                 << "5. Show All Products\n"
+                 << "6. Exit\n"
+                 << "Enter your choice: ";
+            int choice;
+            cin >> choice;
 
-        tk.Button(self.window, text="Add Product", command=self.add_product).grid(row=1, column=0)
-        tk.Button(self.window, text="Sort by Price (QuickSort)", command=self.sort_by_price).grid(row=2, column=0)
-        tk.Button(self.window, text="Search by ID (Binary Search)", command=self.search_by_id).grid(row=3, column=0)
-        tk.Button(self.window, text="Sort by Rating (Merge Sort)", command=self.sort_by_rating).grid(row=4, column=0)
-        tk.Button(self.window, text="Show All Products", command=self.show_products).grid(row=5, column=0)
+            switch (choice) {
+                case 1:
+                    addProduct();
+                    break;
+                case 2:
+                    sortByPrice();
+                    break;
+                case 3:
+                    searchById();
+                    break;
+                case 4:
+                    sortByRating();
+                    break;
+                case 5:
+                    showProducts();
+                    break;
+                case 6:
+                    return;
+                default:
+                    cout << "Invalid choice. Please try again.\n";
+            }
+        }
+    }
 
-    def add_product(self):
-        try:
-            product_id = int(input("Enter Product ID: "))
-            name = input("Enter Product Name: ")
-            category = input("Enter Product Category: ")
-            price = float(input("Enter Product Price: "))
-            rating = float(input("Enter Product Rating: "))
-            product = Product(product_id, name, category, price, rating)
-            self.products.append(product)
-            messagebox.showinfo("Product Added", f"Product '{name}' added successfully!")
-        except ValueError:
-            messagebox.showerror("Input Error", "Invalid input. Please enter valid details.")
+private:
+    void addProduct() {
+        try {
+            int product_id;
+            string name, category;
+            double price, rating;
 
-    def quicksort(self, array, key=lambda x: x):
-        if len(array) <= 1:
-            return array
-        pivot = array[len(array) // 2]
-        left = [x for x in array if key(x) < key(pivot)]
-        middle = [x for x in array if key(x) == key(pivot)]
-        right = [x for x in array if key(x) > key(pivot)]
-        return self.quicksort(left, key) + middle + self.quicksort(right, key)
+            cout << "Enter Product ID: ";
+            cin >> product_id;
+            cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Clear input buffer
+            cout << "Enter Product Name: ";
+            getline(cin, name);
+            cout << "Enter Product Category: ";
+            getline(cin, category);
+            cout << "Enter Product Price: ";
+            cin >> price;
+            cout << "Enter Product Rating: ";
+            cin >> rating;
 
-    def merge_sort(self, array, key=lambda x: x):
-        if len(array) > 1:
-            mid = len(array) // 2
-            left_half = self.merge_sort(array[:mid], key)
-            right_half = self.merge_sort(array[mid:], key)
+            products.emplace_back(product_id, name, category, price, rating);
+            cout << "Product '" << name << "' added successfully!\n";
+        } catch (const exception& e) {
+            cout << "Invalid input. Please enter valid details.\n";
+        }
+    }
 
-            merged = []
-            while left_half and right_half:
-                if key(left_half[0]) < key(right_half[0]):
-                    merged.append(left_half.pop(0))
-                else:
-                    merged.append(right_half.pop(0))
-            return merged + left_half + right_half
-        return array
+    vector<Product> quicksort(const vector<Product>& array, function<double(const Product&)> key) {
+        if (array.size() <= 1) return array;
 
-    def binary_search(self, array, target_id):
-        low, high = 0, len(array) - 1
-        while low <= high:
-            mid = (low + high) // 2
-            if array[mid].id == target_id:
-                return array[mid]
-            elif array[mid].id < target_id:
-                low = mid + 1
-            else:
-                high = mid - 1
-        return None
+        auto pivot = array[array.size() / 2];
+        vector<Product> left, middle, right;
 
-    def sort_by_price(self):
-        self.products = self.quicksort(self.products, key=lambda x: x.price)
-        messagebox.showinfo("Sorted", "Products sorted by price!")
+        for (const auto& product : array) {
+            if (key(product) < key(pivot))
+                left.push_back(product);
+            else if (key(product) == key(pivot))
+                middle.push_back(product);
+            else
+                right.push_back(product);
+        }
 
-    def sort_by_rating(self):
-        self.products = self.merge_sort(self.products, key=lambda x: x.rating)
-        messagebox.showinfo("Sorted", "Products sorted by rating!")
+        auto sorted_left = quicksort(left, key);
+        auto sorted_right = quicksort(right, key);
 
-    def search_by_id(self):
-        if not self.products:
-            messagebox.showerror("Error", "No products available to search.")
-            return
+        sorted_left.insert(sorted_left.end(), middle.begin(), middle.end());
+        sorted_left.insert(sorted_left.end(), sorted_right.begin(), sorted_right.end());
+        return sorted_left;
+    }
 
-        self.products = self.quicksort(self.products, key=lambda x: x.id)
-        try:
-            target_id = int(input("Enter Product ID to search: "))
-            result = self.binary_search(self.products, target_id)
-            if result:
-                messagebox.showinfo("Search Result", f"Product Found: {result}")
-            else:
-                messagebox.showinfo("Search Result", "Product not found.")
-        except ValueError:
-            messagebox.showerror("Input Error", "Please enter a valid Product ID.")
+    vector<Product> mergeSort(vector<Product> array, function<double(const Product&)> key) {
+        if (array.size() <= 1) return array;
 
-    def show_products(self):
-        if self.products:
-            product_list = "\n".join(str(product) for product in self.products)
-            messagebox.showinfo("Product List", product_list)
-        else:
-            messagebox.showinfo("Product List", "No products available.")
+        size_t mid = array.size() / 2;
+        auto left_half = mergeSort(vector<Product>(array.begin(), array.begin() + mid), key);
+        auto right_half = mergeSort(vector<Product>(array.begin() + mid, array.end()), key);
 
-    def run(self):
-        self.window.mainloop()
+        vector<Product> merged;
+        size_t i = 0, j = 0;
+        while (i < left_half.size() && j < right_half.size()) {
+            if (key(left_half[i]) < key(right_half[j])) {
+                merged.push_back(left_half[i]);
+                i++;
+            } else {
+                merged.push_back(right_half[j]);
+                j++;
+            }
+        }
 
+        while (i < left_half.size()) {
+            merged.push_back(left_half[i]);
+            i++;
+        }
 
-if _name_ == "_main_":
-    ecommerce_system = ECommerceSystem()
-    ecommerce_system.run()
+        while (j < right_half.size()) {
+            merged.push_back(right_half[j]);
+            j++;
+        }
+
+        return merged;
+    }
+
+    void sortByPrice() {
+        products = quicksort(products, [](const Product& p) { return p.price; });
+        cout << "Products sorted by price!\n";
+    }
+
+    void sortByRating() {
+        products = mergeSort(products, [](const Product& p) { return p.rating; });
+        cout << "Products sorted by rating!\n";
+    }
+
+    void searchById() {
+        if (products.empty()) {
+            cout << "No products available to search.\n";
+            return;
+        }
+
+        // Sort by ID for binary search
+        products = quicksort(products, [](const Product& p) { return p.id; });
+
+        cout << "Enter Product ID to search: ";
+        int target_id;
+        cin >> target_id;
+
+        int low = 0, high = products.size() - 1;
+        while (low <= high) {
+            int mid = (low + high) / 2;
+            if (products[mid].id == target_id) {
+                cout << "Product Found: " << products[mid].toString() << "\n";
+                return;
+            } else if (products[mid].id < target_id) {
+                low = mid + 1;
+            } else {
+                high = mid - 1;
+            }
+        }
+        cout << "Product not found.\n";
+    }
+
+    void showProducts() {
+        if (products.empty()) {
+            cout << "No products available.\n";
+        } else {
+            cout << "Product List:\n";
+            for (const auto& product : products) {
+                cout << product.toString() << "\n";
+            }
+        }
+    }
+};
+
+// Main Function
+int main() {
+    ECommerceSystem system;
+    system.run();
+    return 0;
+}
