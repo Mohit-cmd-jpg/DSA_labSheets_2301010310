@@ -1,89 +1,124 @@
-from queue import Queue
+#include <iostream>
+#include <stack>
+#include <queue>
+#include <string>
+using namespace std;
 
-class TextEditor:
-    def _init_(self):
-        self.text = []  # Array to store characters
-        self.undo_stack = []  # Stack for undo operations
-        self.redo_stack = []  # Stack for redo operations
-        self.clipboard = Queue()  # Queue for clipboard management
+class TextEditor {
+    string text;                      // To store the current text
+    stack<pair<string, pair<int, string>>> undo_stack;  // Stack for undo operations
+    stack<pair<string, pair<int, string>>> redo_stack;  // Stack for redo operations
+    queue<string> clipboard;          // Queue for clipboard management
 
-    # Insert text at a specific position
-    def insert_text(self, position, text):
-        self.undo_stack.append(('delete', position, len(text)))
-        self.redo_stack.clear()
-        self.text = self.text[:position] + list(text) + self.text[position:]
+public:
+    TextEditor() : text("") {}
 
-    # Delete text from a specific position
-    def delete_text(self, position, length):
-        deleted_text = ''.join(self.text[position:position + length])
-        self.undo_stack.append(('insert', position, deleted_text))
-        self.redo_stack.clear()
-        self.text = self.text[:position] + self.text[position + length:]
+    // Insert text at a specific position
+    void insertText(int position, const string& newText) {
+        undo_stack.push({"delete", {position, to_string(newText.size())}});
+        redo_stack = stack<pair<string, pair<int, string>>>(); // Clear redo stack
+        text.insert(position, newText);
+    }
 
-    # Undo the last operation
-    def undo(self):
-        if not self.undo_stack:
-            print("Nothing to undo.")
-            return
-        action, position, value = self.undo_stack.pop()
-        if action == 'insert':
-            self.redo_stack.append(('delete', position, len(value)))
-            self.text = self.text[:position] + list(value) + self.text[position:]
-        elif action == 'delete':
-            self.redo_stack.append(('insert', position, ''.join(self.text[position:position + value])))
-            self.text = self.text[:position] + self.text[position + value:]
+    // Delete text from a specific position
+    void deleteText(int position, int length) {
+        string deletedText = text.substr(position, length);
+        undo_stack.push({"insert", {position, deletedText}});
+        redo_stack = stack<pair<string, pair<int, string>>>(); // Clear redo stack
+        text.erase(position, length);
+    }
 
-    # Redo the last undone operation
-    def redo(self):
-        if not self.redo_stack:
-            print("Nothing to redo.")
-            return
-        action, position, value = self.redo_stack.pop()
-        if action == 'insert':
-            self.undo_stack.append(('delete', position, len(value)))
-            self.text = self.text[:position] + list(value) + self.text[position:]
-        elif action == 'delete':
-            self.undo_stack.append(('insert', position, ''.join(self.text[position:position + value])))
-            self.text = self.text[:position] + self.text[position + value:]
+    // Undo the last operation
+    void undo() {
+        if (undo_stack.empty()) {
+            cout << "Nothing to undo." << endl;
+            return;
+        }
+        auto lastAction = undo_stack.top();
+        undo_stack.pop();
 
-    # Copy text to clipboard
-    def copy(self, position, length):
-        copied_text = ''.join(self.text[position:position + length])
-        self.clipboard.put(copied_text)
+        string action = lastAction.first;
+        int position = lastAction.second.first;
+        string value = lastAction.second.second;
 
-    # Paste text from clipboard to a specific position
-    def paste(self, position):
-        if self.clipboard.empty():
-            print("Clipboard is empty.")
-            return
-        text_to_paste = self.clipboard.get()
-        self.insert_text(position, text_to_paste)
+        if (action == "insert") {
+            redo_stack.push({"delete", {position, to_string(value.size())}});
+            text.insert(position, value);
+        } else if (action == "delete") {
+            redo_stack.push({"insert", {position, text.substr(position, stoi(value))}});
+            text.erase(position, stoi(value));
+        }
+    }
 
-    # Display the current text
-    def display(self):
-        print(''.join(self.text))
+    // Redo the last undone operation
+    void redo() {
+        if (redo_stack.empty()) {
+            cout << "Nothing to redo." << endl;
+            return;
+        }
+        auto lastAction = redo_stack.top();
+        redo_stack.pop();
 
+        string action = lastAction.first;
+        int position = lastAction.second.first;
+        string value = lastAction.second.second;
 
-# Example Usage
-editor = TextEditor()
+        if (action == "insert") {
+            undo_stack.push({"delete", {position, to_string(value.size())}});
+            text.insert(position, value);
+        } else if (action == "delete") {
+            undo_stack.push({"insert", {position, text.substr(position, stoi(value))}});
+            text.erase(position, stoi(value));
+        }
+    }
 
-# Insert Text
-editor.insert_text(0, "Hello")
-editor.display()
+    // Copy text to clipboard
+    void copy(int position, int length) {
+        string copiedText = text.substr(position, length);
+        clipboard.push(copiedText);
+    }
 
-# Delete Text
-editor.delete_text(0, 2)
-editor.display()
+    // Paste text from clipboard to a specific position
+    void paste(int position) {
+        if (clipboard.empty()) {
+            cout << "Clipboard is empty." << endl;
+            return;
+        }
+        string textToPaste = clipboard.front();
+        clipboard.pop();
+        insertText(position, textToPaste);
+    }
 
-# Undo Operation
-editor.undo()
-editor.display()
+    // Display the current text
+    void display() const {
+        cout << text << endl;
+    }
+};
 
-# Redo Operation
-editor.redo()
-editor.display()
+// Example Usage
+int main() {
+    TextEditor editor;
 
-# Copy and Paste
-editor.copy(0, 2)
-editor.paste(5)
-editor.display()
+    // Insert Text
+    editor.insertText(0, "Hello");
+    editor.display();
+
+    // Delete Text
+    editor.deleteText(0, 2);
+    editor.display();
+
+    // Undo Operation
+    editor.undo();
+    editor.display();
+
+    // Redo Operation
+    editor.redo();
+    editor.display();
+
+    // Copy and Paste
+    editor.copy(0, 2);
+    editor.paste(5);
+    editor.display();
+
+    return 0;
+}
